@@ -5,10 +5,16 @@
 
 package erutazero.game;
 
+import javax.microedition.lcdui.game.GameCanvas;
+
 /**
  *
  * @author bjorn
  */
-public class Screen {
+public class Screen extends GameCanvas  {
+
+    Screen() {
+        super(true);
+    }
 
 }
