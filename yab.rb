@@ -1,9 +1,13 @@
 #!/usr/bin/env ruby 
 # My own bloody build script. Even BUILDR is too SLOOOOOOOOW! Argh! :p
 #
+
+require 'pstore'
+
 module Yabar
   DEBUG   = true 
   VERBOSE = true
+  SAVE    = false
   class Task
     attr_reader :name
     attr_reader :act
@@ -17,6 +21,17 @@ module Yabar
       @ran  = false
       @ok   = false
       @error= nil
+    end
+    
+    def load_run(info)
+      if info 
+	@ran = true
+	@ok  = true
+      end
+    end
+    
+    def save_run()
+      return @ran && @ok
     end
     
     def run    
@@ -46,6 +61,27 @@ module Yabar
     
   end  
   
+  CACHE = 'yab.cache'
+  
+  def open_cache
+    @cache ||= PStore.new(CACHE)
+    return @cache
+  end
+  
+  def load_task(name)
+    return nil unless SAVE 
+    open_cache.transaction do |c|
+      return c[name.to_sym]
+    end
+  end
+  
+  def save_task(name, info)
+    return nil unless SAVE
+    open_cache.transaction do |c|
+      c[name.to_sym] = info
+    end
+  end
+  
   def get_task(name)
     return @@tasks[name.to_sym]
   end
@@ -53,12 +89,22 @@ module Yabar
   def add_task(t)
     @@tasks ||= {}    
     @@tasks[t.name.to_sym] = t
+    t.load_run(load_task(t.name))     
     return @@tasks
+  end
+  
+  def save_tasks
+    @@tasks ||= {}
+    @@tasks.each do |k, t| 
+      save_task(t.name, t.save_run)
+    end
   end
   
   def run(name = :compile) 
     to_run = self.get_task(name)
-    return to_run.run
+    res    = to_run.run
+    save_tasks
+    return res
   end
   
   def autorun
@@ -99,7 +145,7 @@ BUILD_CLASSPATH = RUN_CLASSPATH
 SRC_PATH   	= 'src'
 MAIN_FILE 	= 'src/erutazero/game/ErutaZero.java'
 MAIN_CLASS      = 'erutazero.game.ErutaZero'
-PROGUARD        = '~/arch/dl/mobile/proguard4.5.1/bin/proguard.sh'
+PROGUARD        = 'vendor/proguard4.5.1/bin/proguard.sh'
 C3_DIR		= '/media/0000-EDA2'
 
 
@@ -112,10 +158,19 @@ task :jar, :compile do
   shell JAR, 'cvfm', PRE_JAR_NAME, MANIFEST, '-C',  BUILD_DIR, '.'
 end
 
+# Use PROGUARD as a microedition verification tool.
 task :verify, :jar do
-  shell PROGUARD, '-injars', PRE_JAR_NAME, '-outjars', JAR_NAME, 
+  shell PROGUARD, '-microedition', '-injars', PRE_JAR_NAME, '-outjars', JAR_NAME, 
         '-libraryjars', BUILD_CLASSPATH, '-dontshrink', '-keepdirectories', 
-        '-keepclass class', MAIN_CLASS  
+        '-repackageclasses ', '-allowaccessmodification', '-printseeds',        
+        '-keep "public class * extends javax.microedition.midlet.MIDlet"',
+        '-adaptresourcefilenames  "**.properties,**.png,**.jpg,**.rak"',
+	'-adaptresourcefilecontents "**.properties,META-INF/MANIFEST.MF"'
+
+        
+# -overloadaggressively
+# -microedition
+
 =begin
 ~/arch/dl/mobile/proguard4.5.1/bin/proguard.sh -injars ErutaZeroPre.jar -libraryjars vendor/microemulator-2.0.4/microemulator.jar:vendor/microemulator-2.0.4/lib/midpapi20.jar:vendor/microemulator-2.0.4/lib/cldcapi10.jar  -outjars ErutaZero.jar -dontshrink -keepdirectories   -keep class erutazero.game.ErutaZero
 =end
