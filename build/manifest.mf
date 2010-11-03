@@ -1,5 +1,5 @@
 MIDlet-1: ErutaZero,,erutazero.game.ErutaZero
-MIDlet-Vendor: beoran
+MIDlet-Vendor: Unknown
 MIDlet-Name: erutazero
 MIDlet-Version: 1.0
 MicroEdition-Configuration: CLDC-1.0
