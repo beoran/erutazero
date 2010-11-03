@@ -16,7 +16,7 @@ BLOCK -> do PROGRAM end | ob PROGRAM cb | os PROGRAM cs | oa PROGRAM ca.
 NL -> nl | semicolon .
 VALUE -> string | number | symbol | operator .
  * 
- * nl is ' or ';'
+ * nl is '\n' or ';'
  *
  */
 package rakuda;
@@ -33,6 +33,18 @@ public class Rakuda {
     public Token(int type, String string) {
         _type   = type;
         _string = string;
+    }
+
+    public int type()                   { return _type; }
+
+    public boolean typeIs(int type)     { return _type == type;  }
+
+    public boolean typeIn(int[] types) {
+      int index = 0;
+      for (index = 0 ; index < types.length ; index ++) {
+        if (typeIs(types[index])) return true;
+      }
+      return false;
     }
 
     public String toString() {
@@ -53,8 +65,8 @@ public class Rakuda {
     public final static int CLOSE_BRACKET = 6;
     public final static int OPEN_BRACE    = 7;
     public final static int CLOSE_BRACE   = 8;
-    public final static int OPEN_SQUARE   = 9;
-    public final static int CLOSE_SQUARE  = 10;
+    public final static int OPEN_PAREN    = 9;
+    public final static int CLOSE_PAREN   = 10;
     public final static int SEPARATOR     = 11;
     public final static int END_STREAM    = 12;
     public final static int ERROR         = 13;
@@ -95,8 +107,12 @@ public class Rakuda {
         return c == '\n' || c == ';' || c == '\r';
     }
 
+    static boolean isBracket(char c) {
+        return c == '(' || c == ')' || c == '[' || c == ']' || c== '{' || c == '}';
+    }
+
     static boolean isOp(char c) {
-        return !(isBlank(c) || isAlnum(c) || isEol(c));
+        return !(isBlank(c) || isAlnum(c) || isEol(c) || isBracket(c));
     }
 
     public char peep() {
@@ -138,9 +154,16 @@ public class Rakuda {
         _offset = 0;
     }
 
+    Token token(int type, String text) {
+        return new Token(type, text);
+    }
+
+    Token token(int type, char c) {
+        return token(type, String.valueOf(c));
+    }
 
     Token lex_error(String text) {
-        return new Token(Lexer.ERROR, text);
+        return token(Lexer.ERROR, text);
     }
 
 
@@ -148,7 +171,7 @@ public class Rakuda {
         while (isDigit(this.peek())) {
             if (eos()) return lex_error("Unexpected end of stream in number");
         }
-        return new Token(Lexer.NUMBER, this.part());
+        return token(Lexer.NUMBER, this.part());
 
         // return new Token(Lexer.ERROR, "Could not parse number");
     }
@@ -157,7 +180,7 @@ public class Rakuda {
         while (isAlnum(this.peek())) {
             if (eos()) return lex_error("Unexpected end of stream in symbol");
         }
-        return new Token(Lexer.SYMBOL, this.part());
+        return token(Lexer.SYMBOL, this.part());
         // return new Token(Lexer.ERROR, "Could not parse number");
     }
 
@@ -165,7 +188,7 @@ public class Rakuda {
         while (isOp(this.peek())) {
             if (eos()) return lex_error("Unexpected end of stream in operator");
         }
-        return new Token(Lexer.OPERATOR, this.part());
+        return token(Lexer.OPERATOR, this.part());
         // return new Token(Lexer.ERROR, "Could not parse number");
     }
 
@@ -181,9 +204,23 @@ public class Rakuda {
             escape  = now == '\\';
             done    = (!escape) && now == first;
         }
-        return new Token(Lexer.SYMBOL, this.part_noquotes());
+        return token(Lexer.SYMBOL, this.part_noquotes());
         // return new Token(Lexer.ERROR, "Could not parse number");
     }
+
+    public Token lex_bracket(char c) {
+      switch(c) {
+        case '(': return token(Lexer.OPEN_PAREN, c);
+        case '{': return token(Lexer.OPEN_BRACE, c);
+        case '[': return token(Lexer.OPEN_BRACKET, c);
+        case ')': return token(Lexer.CLOSE_PAREN, c);
+        case '}': return token(Lexer.CLOSE_BRACE, c);
+        case ']': return token(Lexer.CLOSE_BRACKET, c);
+        default:
+          return lex_error("Bracket is not a bracket!");
+      }
+    }
+
 
     public Token lex() {
         while (!eos()) {
@@ -197,16 +234,17 @@ public class Rakuda {
             } else if (ch == '\\') {
                 skip(2);
                 // skip escaped character and ignore it
+            } else if(isBracket(ch))  {
+              return lex_bracket(ch);
             } else if (isBlank(ch)) {
                 skip();
                 // skip whitespace character and ignore it
             } else if (isEol(ch)) {
-                return new Token(Lexer.SEPARATOR, String.valueOf(ch));
+                return token(Lexer.SEPARATOR, ch);
             } else if (isOp(ch)) {
                return lex_op();
-            }
-            else {
-                return lex_error("Unknown character");
+            } else {
+               return lex_error("Unknown character. Should not happen.");
             }
        }
       return null;
@@ -216,40 +254,73 @@ public class Rakuda {
 
 
     public static class Node {
- /*
- * program       := expression program | EMPTY
- * expression    := value parameter newline
- * parameter     := value parameter | block | EMPTY
- * block         := brace_block | bracket_block | square_block
- * brace_block   := optnewline '{' optnewline program '}'
- * bracket_block := optnewline '(' optnewline program ')'
- * square_block  := optnewline '[' optnewline program ']'
- * newline       := '\n' newline | '\n' | ';'
- * opt_newline   := '\n' | ';' | EMPTY
- * value         := NUMBER || STRING || SYMBOL || OPERATOR
+
+
+
+/*
+PROGRAM -> EXPRESSION PROGRAM | .
+EXPRESSION -> VALUE PARAMLIST NL | BLOCK .
+PARAMLIST -> PARAMETER PARAMLIST | .
+PARAMETER -> BLOCK | VALUE .
+BLOCK -> do PROGRAM end | ob PROGRAM cb | os PROGRAM cs | oa PROGRAM ca.
+NL -> nl | semicolon .
+VALUE -> string | number | symbol | operator .
 */
+
         public final static int PROGRAM       = 1;
         public final static int EXPRESSION    = 2;
-        public final static int BLOCK         = 3;
-        public final static int BRACE_BLOCK   = 4;
-        public final static int BRACKET_BLOCK = 5;
-        public final static int SQUARE_BLOCK  = 6;
-        public final static int NEWLINE       = 7;
-        public final static int OPT_NEWLINE   = 8;
-        public final static int VALUE         = 9;
-        public final static int NUMBER        = 10;
-        public final static int STRING        = 11;
-        public final static int SYMBOL        = 12;
-        public final static int OPERATOR      = 13;
-        public final static int ERROR         = 14;
+        public final static int PARAMLIST     = 3;
+        public final static int PARAMETER     = 4;
+        public final static int BLOCK         = 5;
+        public final static int BRACE_BLOCK   = 6;
+        public final static int BRACKET_BLOCK = 7;
+        public final static int SQUARE_BLOCK  = 8;
+        public final static int NEWLINE       = 9;
+        public final static int VALUE         = 10;
+        public final static int NUMBER        = 11;
+        public final static int STRING        = 12;
+        public final static int SYMBOL        = 13;
+        public final static int OPERATOR      = 14;
+        public final static int ERROR         = 15;
 
         Node _parent, _next, _previous;
+        String _text;
+        int _type;
 
+        public Node(Node parent, int type, String text) {
+          _parent = parent;
+          _next   = _previous = null;
+          _type   = type;
+          _text   = text;
+        }
 
     }
 
     public static class Parser  {
-        
+
+      Lexer _lex;
+      Node _root, _now;
+
+      public Parser(Lexer lex) {
+        _lex  = lex;
+        _root = new Node(null, Node.PROGRAM, "<root>");
+        _now  = _root;
+      }
+
+      Node parse_value(Token tok) {
+        int []ok = { Lexer.STRING, Lexer.NUMBER,  Lexer.OPERATOR, Lexer.SYMBOL};
+        if (tok.typeIn(ok)) {
+          return new Node(_now, Node.VALUE, tok.toString());
+        }
+        return new Node(_now, Node.ERROR, "Expected value.");
+      }
+
+      Node parse() {
+        while (!_lex.eos()) {
+          parse_value(_lex.lex());
+        }
+        return _root;
+      }
 
 
 
