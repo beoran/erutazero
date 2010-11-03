@@ -2,6 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+/**
+ * JavaMe Docs at: http://download.oracle.com/javame/
+ */
 
 package erutazero.game;
 
