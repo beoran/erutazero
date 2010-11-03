@@ -5,20 +5,19 @@
 
 package erutazero.game;
 
-import erutazero.parser.Lexer;
+import rakuda.Rakuda;
 import javax.microedition.lcdui.*;
 import javax.microedition.midlet.*;
 /**
  * @author bjorn
  */
 public class ErutaZero extends MIDlet implements CommandListener {
-    Lexer _lexer;
+    Rakuda.Lexer _lexer;
 
     private Command exitCommand;
     private TextBox tbox;
 
     public ErutaZero() {
-
         exitCommand = new Command("Exit", Command.EXIT, 1);
         tbox = new TextBox("Hello world MIDlet", "Hello World!", 25, 0);
         tbox.addCommand(exitCommand);
@@ -26,8 +25,8 @@ public class ErutaZero extends MIDlet implements CommandListener {
     }
 
     protected void startApp() {
-        _lexer = new Lexer("123 hello");
-        Lexer.Token token = _lexer.lex();
+        _lexer = new Rakuda.Lexer("hello 123");
+        Rakuda.Token token = _lexer.lex();
         Screen screen = new Screen();
         tbox.setTitle(token.toString());
         Display.getDisplay(this).setCurrent(tbox);
