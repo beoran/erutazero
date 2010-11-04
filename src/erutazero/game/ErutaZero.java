@@ -11,6 +11,8 @@ package erutazero.game;
 import rakuda.Rakuda;
 import javax.microedition.lcdui.*;
 import javax.microedition.midlet.*;
+import jatite.T;
+
 /**
  * @author bjorn
  */
@@ -30,8 +32,10 @@ public class ErutaZero extends MIDlet implements CommandListener {
     protected void startApp() {
         _lexer = new Rakuda.Lexer("hello 123");
         Rakuda.Token token = _lexer.lex();
+        String tokval = token.toString();
+        T.test("lex text: " + tokval, tokval.endsWith("hello"));
         Screen screen = new Screen();
-        tbox.setTitle(token.toString());
+        tbox.setTitle(T.report().toString());
         Display.getDisplay(this).setCurrent(tbox);
     }
 
