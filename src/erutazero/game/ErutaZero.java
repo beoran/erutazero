@@ -24,7 +24,7 @@ public class ErutaZero extends MIDlet implements CommandListener {
 
     public ErutaZero() {
         exitCommand = new Command("Exit", Command.EXIT, 1);
-        tbox = new TextBox("Hello world MIDlet", "Hello World!", 25, 0);
+        tbox = new TextBox("Hello world MIDlet", "", 25, 0);
         tbox.addCommand(exitCommand);
         tbox.setCommandListener(this);
     }
@@ -33,9 +33,11 @@ public class ErutaZero extends MIDlet implements CommandListener {
         _lexer = new Rakuda.Lexer("hello 123");
         Rakuda.Token token = _lexer.lex();
         String tokval = token.toString();
-        T.test("lex text: " + tokval, tokval.endsWith("hello"));
+        T.test_equal("abc", "abc");
+        T.test_equal(tokval, "hello");
         Screen screen = new Screen();
-        tbox.setTitle(T.report().toString());
+        // tbox.insert(T.report().toString(), 0);
+        tbox.setTitle(T.report());
         Display.getDisplay(this).setCurrent(tbox);
     }
 
