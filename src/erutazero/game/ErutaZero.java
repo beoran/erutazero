@@ -11,7 +11,7 @@ package erutazero.game;
 import rakuda.Rakuda;
 import javax.microedition.lcdui.*;
 import javax.microedition.midlet.*;
-import jatite.T;
+import jatite.Is;
 
 /**
  * @author bjorn
@@ -21,34 +21,30 @@ public class ErutaZero extends MIDlet implements CommandListener {
 
     private Command exitCommand;
     private TextBox tbox;
+    private Alert alert;
 
     public ErutaZero() {
-        exitCommand = new Command("Exit", Command.EXIT, 1);
-        tbox = new TextBox("Hello world MIDlet", "", 25, 0);
-        tbox.addCommand(exitCommand);
-        tbox.setCommandListener(this);
     }
 
-    protected void startApp() {
-        _lexer = new Rakuda.Lexer("hello 123");
-        Rakuda.Token token = _lexer.lex();
-        String tokval = token.toString();
-        T.test_equal("abc", "abc");
-        T.test_equal(tokval, "hello");
-        Screen screen = new Screen();
-        // tbox.insert(T.report().toString(), 0);
-        tbox.setTitle(T.report());
-        Display.getDisplay(this).setCurrent(tbox);
+   protected void startApp() {
+      _lexer = new Rakuda.Lexer("hello 123");
+      Rakuda.Token token = _lexer.lex();
+      String tokval = token.toString();
+      Is.equal("abc", "abc");
+      Is.equal(tokval, "hello ");
+      Display.getDisplay(this).setCurrent(alert);
+      jatite.Midp.show(this, Display.getDisplay(this), Is.report());
+      Screen screen = new Screen();
     }
 
     protected void pauseApp() {}
     protected void destroyApp(boolean bool) {}
 
     public void commandAction(Command cmd, Displayable disp) {
-        if (cmd == exitCommand) {
-            destroyApp(false);
-            notifyDestroyed();
-        }
+      if (cmd.getCommandType() == Command.EXIT) {
+        destroyApp(false);
+        notifyDestroyed();
+      }
     }
 
 }
