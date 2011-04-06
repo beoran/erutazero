@@ -57,7 +57,11 @@ Erutazero.game.draw_test = function() {
       stop  = (new Date()).getTime();
       delta = stop - start;
       Beja.puts("Time for one layer draw: " + delta);
-      // around 25 fps.. quite low :p
+      start = (new Date()).getTime();
+      stop  = (new Date()).getTime();
+      delta = stop - start;
+      Beja.puts("Time for one baseline: " + delta);
+      // around 25 fps.. quite low :p baseline is 0
   }
   
   
