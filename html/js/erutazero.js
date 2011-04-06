@@ -3,6 +3,37 @@
 Erutazero      = Beja.module();
 Erutazero.game = Beja.module();
 
+Erutazero.layer = Beja.module();
+Erutazero.layer.init = function (wide, high, tileset) {
+  this._tileset     = new Image();
+  this._tileset.src = tileset;
+  this._high        = high;
+  this._wide        = wide;
+  this._tiles       = new Array();  
+  for (var y =0; y < this._high; y++) {
+    this._tiles[y] = new Array();
+    for(var x=0; x < this._wide; x++) {
+      this._tiles[y][x] = 0;
+    }
+  }
+}
+
+Erutazero.layer.draw = function (screen, sw, sh, dx, dy) { 
+  for (var y =0; y < this._high; y++) {  
+    for(var x=0; x < this._wide; x++) {
+      tile = this._tiles[y][x]
+      if (tile != null) {
+        srcx = (tile * 32) % this._tileset.width;
+        srcy = (tile * 32) / this._tileset.width;
+        dstx = x * 32;
+        dsty = y * 32;
+        screen.drawImage(this._tileset, srcx, srcy, 32, 32, dstx, dsty, 32, 32)
+      }
+    }
+  }
+}
+
+Erutazero.Layer = Beja.class(Erutazero.layer);
 
 Erutazero.game.draw_test = function() {
   this._draw.fillStyle = "rgb(127,0,0)";
@@ -14,12 +45,27 @@ Erutazero.game.draw_test = function() {
   this._draw.font = "bold 26px serif";
   this._draw.fillText('Test text OK!', 10, 240);
 
-  var img     = new Image();
-  img.src     = "img/tiles_32x32.png";
+  var layer   = new Erutazero.Layer(20, 15, "img/tiles_1000_village.png");
+  
   var _draw   = this._draw
-  img.onload  = function () {
-      _draw.drawImage(img, 50, 300);
+  var _canvas = this._canvas
+  layer._tileset.onload  = function () {
+      _draw.drawImage(layer._tileset, 50, 300);
+      
+      start = (new Date()).getTime();
+      layer.draw(_draw, _canvas.width, _canvas.height, 0, 0); 
+      stop  = (new Date()).getTime();
+      delta = stop - start;
+      Beja.puts("Time for one layer draw: " + delta);
+      // around 25 fps.. quite low :p
   }
+  
+  
+  
+  /*
+  var img     = new Image();
+  img.src     = ;
+  */
   // this._draw.drawImage(img, 50, 300);
 }
 

@@ -173,7 +173,8 @@ Beja.puts = function(str) {
   var out    = Beja.id('debug');
   newdiv.appendChild(document.createTextNode(s));
   // newdiv.className = type;
-  if (out) out.appendChild(newdiv); else { console.log(s) }  
+  if (out) out.appendChild(newdiv); 
+  /* else if(console) { console.log(s); }  */  
   return newdiv;
 }
 
