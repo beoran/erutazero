@@ -41,21 +41,17 @@ Beja.id = function(id) {
   if (typeof id !='string') return id;
   if (document.getElementById) return document.getElementById(id);
   // Modern, DOM-based browsers.
-  if(document.all) return document.all[id];
-  // IE
-  return eval('document.' + id);
-  // NS4
+  if(document.all) return document.all[id]; // IE5  
+  return eval('document.' + id); // NS4
 }
 
 /* Same function, but written shorter */
 Beja.$ = function(id) { return Beja.id(id); }
 
-
 /* A shorter way to write element.getElementsByTagName(name.toUpperCase()) */
 Beja.name = function (parent, name) {
   return parent.getElementsByTagName(name.toUpperCase());
 }
-
 
 /* Sets an attribute of the element of the document to a different element. */
 Beja.set_attribute = function (myid, key, val) { 
@@ -130,6 +126,55 @@ Beja.Event.mouse_at = function (e) {
 Beja.handle_onload = function() {
   if (Beja.onload) return Beja.onload(); 
   return false;
+}
+
+/* Copies all the methods in methods to klass.prototype */
+Beja.copy_methods_to_prototype = function(klass, methods) {
+  if(!methods) return; 
+  for (name in methods) {
+    klass.prototype[name] = methods[name]; 
+  } 
+} 
+
+/* Returns a generic constructor function that will call the init method. */
+Beja.make_constructor = function() { 
+  return function() {
+    if(typeof(this['init']) == 'function') {  
+      this['init'].apply(this, arguments);
+    } 
+  };  
+}
+
+/* Basic oop. */
+Beja.class = function(methods) {
+  klass    = Beja.make_constructor();
+  Beja.copy_methods_to_prototype(klass, methods);
+  return klass; 
+}
+
+/* Basic oop, and inheritance. */
+Beja.inherit = function(parentklass, methods) {
+  klass                       = Beja.make_constructor();
+  klass.prototype             = new parentklass();
+  klass.prototype.constructor = klass;
+  Beja.copy_methods_to_prototype(klass, methods);
+  return klass;
+};
+  
+/* Module does not have any inheritance. */
+Beja.module = function() {
+  return Beja.make_constructor();
+}
+
+/* Debug logging. */
+Beja.puts = function(str) {
+  s = String(str);
+  var newdiv = document.createElement('div');
+  var out    = Beja.id('debug');
+  newdiv.appendChild(document.createTextNode(s));
+  // newdiv.className = type;
+  if (out) out.appendChild(newdiv); else { console.log(s) }  
+  return newdiv;
 }
 
 Beja.Event.listen(window, "load", Beja.handle_onload);
