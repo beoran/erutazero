@@ -178,6 +178,19 @@ Beja.puts = function(str) {
   return newdiv;
 }
 
+/** Simplistic profiling */
+Beja.profile = function(func) {
+  var start = (new Date()).getTime();
+  var stop  = (new Date()).getTime();
+  var over  = stop - start;
+  
+  start = (new Date()).getTime();
+  func(); 
+  stop  = (new Date()).getTime();
+  return stop - start - over;
+}  
+      
+/* Make unload work. */
 Beja.Event.listen(window, "load", Beja.handle_onload);
 
 
