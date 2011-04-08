@@ -12,6 +12,31 @@
   <meta name="author"       content="beoran@rubyforge.org"                  >
   <meta name="date"         content=""                                      >
   <link rel="stylesheet"    href="css/zeutazero.css" type= "text/css"       >
+  <style type="text/css">
+    .screen  { 
+      /*top: 20px; left: 20px;
+      position: absolute  ;*/
+      display: block;
+      overflow : hidden;
+      width:      320px ; height : 240px ;       
+      background: #fef  ;       
+    }
+    .layer {
+      display: block;
+      position: absolute;
+      top: -40px; left: -40px;
+    }
+    .tile { 
+      overflow: hidden;
+      display: block;
+      /*position: absolute  ; 
+      width:    32px      ; height:   32px; 
+      background-image: url(img/tiles_1000_village.png);
+      background-position: -32px 0px;
+      top : 0px; left: 0px;*/
+    }
+
+  </style>
   <script type="text/javascript" src="js/beja.js"                           >
   </script>
   <script type="text/javascript" src="js/erutazero.js"                      >
@@ -20,7 +45,16 @@
 <body>
   <h1>Eruta Zero</h1>
   <!-- Preload some images -->
-  <img src="img/tiles_1000_village.png" width="0" height="0">
+  <img src="img/tiles_1000_village.png" width="0" height="0"></img>
+  <div id='screen' class='screen'>
+  <!--
+    <div id='layer_0' class ='layer'>
+      <div id='tile_0_0_0' class='tile'>
+      </div>
+    </div>
+  --> 
+  </div>
+  
   <canvas id="canvas" width="640" height="480">
     Sorry, you need a brower that supports the canvas element.
   </canvas>
